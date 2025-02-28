@@ -34,7 +34,8 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(128, 128, 128, 0.3);
+      color: rgba(255,255,255,0.7);
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -43,6 +44,10 @@
       justify-content: center;
       cursor: pointer;
       z-index: 10000;
+      font-size: 18px;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: iconFade 5s forwards;
+      user-select: none;
     }
     #info-modal {
       position: fixed;
@@ -55,17 +60,26 @@
       width: 300px;
       display: none;
       font-family: Arial;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.1);
     }
     #info-modal h1 {
       font-size: 24px;
       margin: 0 0 15px 0;
+      color: #ddd;
     }
     #info-modal a {
-      color: #58a6ff; /* GitHub 蓝色 */
+      color: #58a6ff;
       text-decoration: none;
     }
 
+    /* 动画 */
     @keyframes fade {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes iconFade {
       0% { opacity: 1; }
       90% { opacity: 1; }
       100% { opacity: 0; }
@@ -73,19 +87,17 @@
   </style>
 </head>
 <body>
-  <!-- 提示文字 -->
+  <!-- 操作提示 -->
   <div id="tip"></div>
 
   <!-- 信息图标和内容 -->
-  <div id="info-btn">ℹ️</div>
+  <div id="info-btn">ⓘ</div>
   <div id="info-modal">
     <h1>Black Screen</h1>
     <p style="margin-bottom: 20px;">Just a black web page</p>
-    
     <p>Created by Caleb Liaoson</p>
     <p>You can double-click anywhere on the page to cover your entire screen with black!</p>
     <p>A 10 hours black screen video</p>
-    
     <a href="https://github.com/Liaoson" target="_blank">Find the repository on Github</a>
     <div style="margin-top: 15px;">
       <button onclick="document.getElementById('info-modal').style.display='none'" 
@@ -99,15 +111,49 @@
   <audio id="audio" src="noise.mp3" loop></audio>
 
   <script>
-    // 多语言提示
+    // 多语言提示（支持28种语言）
+    const tips = {
+      'zh-CN': '双击屏幕，全屏显示 | 按下空格键打开/关闭白噪音',
+      'zh-TW': '雙擊螢幕，全螢幕顯示 | 按下空白鍵開啟/關閉白噪音',
+      'zh-HK': '雙擊螢幕，全螢幕顯示 | 按下空白鍵開啟/關閉白噪音',
+      'en':    'Double-click to fullscreen | Press SPACE to toggle sound',
+      'ja':    'ダブルクリックで全画面表示 | スペースキーで音声切り替え',
+      'ko':    '더블클릭으로 전체화면 | 스페이스바로 소리 전환',
+      'th':    'ดับเบิลคลิกเพื่อแสดงเต็มจอ | กดสเปซเพื่อเปิด/ปิดเสียง',
+      'id':    'Klik ganda untuk layar penuh | Tekan SPASI untuk suara',
+      'ms':    'Klik dua kali untuk skrin penuh | Tekan SPASI untuk bunyi',
+      'ar':    'انقر نقرًا مزدوجًا للشاشة الكاملة | اضغط SPACE للصوت',
+      'pt':    'Clique duplo para tela cheia | Pressione ESPAÇO para som',
+      'vi':    'Nhấp đôi để toàn màn hình | Nhấn SPACE để bật/tắt âm thanh',
+      'ta':    'இரட்டை கிளிக் முழுத்திரை | SPACE ஐ அழுத்து ஒலி',
+      'ru':    'Двойной щелчок для полного экрана | Пробел для звука',
+      'mn':    'Давхар дарж бүтэн дэлгэц | ЗАЙ залгах/унтраах',
+      'my':    'ဖန်သားပြင်အပြည့်ကြည့်ရန် နှစ်ခါနှိပ်ပါ | အသံဖွင့်ရန် SPACE',
+      'nl':    'Dubbelklik voor volledig scherm | SPATIE voor geluid',
+      'fr':    'Double-clic pour plein écran | ESPACE pour le son',
+      'de':    'Doppelklick für Vollbild | LEERTASTE für Ton',
+      'es':    'Doble clic para pantalla completa | ESPACIO para sonido',
+      'it':    'Doppio clic per schermo intero | SPAZIO per audio',
+      'fi':    'Kaksoisnapsauta koko näyttö | VÄLILYÖNTI äänelle',
+      'sv':    'Dubbelklicka för helskärm | MELLANSLAG för ljud',
+      'no':    'Dobbeltklikk for fullskjerm | MELLOMROM for lyd',
+      'da':    'Dobbeltklik for fuld skærm | MELLEMRUM for lyd',
+      'el':    'Διπλό κλικ για πλήρη οθόνη | ΔΙΑΣΤΗΜΑ για ήχο',
+      'tr':    'Tam ekran için çift tık | SES için BOŞLUK',
+      'fa':    'دوبار کلیک برای تمام صفحه | SPACE برای صدا'
+    };
+
+    // 初始化提示
     document.addEventListener('DOMContentLoaded', () => {
-      const isChinese = navigator.language.startsWith('zh');
-      document.getElementById('tip').textContent = isChinese ? 
-        '若要退出全屏模式，请按下 Esc 键' : 
-        'Press ESC to exit fullscreen';
+      const lang = navigator.language || navigator.userLanguage;
+      const tip = document.getElementById('tip');
+      const matchedLang = Object.keys(tips).find(key => 
+        lang === key || lang.startsWith(key.split('-')[0])
+      ) || 'en';
+      tip.textContent = tips[matchedLang] || tips.en;
     });
 
-    // 双击全屏（兼容所有浏览器）
+    // 全屏交互
     document.body.addEventListener('dblclick', () => {
       const el = document.documentElement;
       if (el.requestFullscreen) el.requestFullscreen();
@@ -117,6 +163,10 @@
     });
 
     // ESC 退出全屏
+    document.addEventListener('fullscreenchange', () => {
+      document.getElementById('info-btn').style.display = 
+        document.fullscreenElement ? 'none' : 'flex';
+    });
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         if (document.exitFullscreen) document.exitFullscreen();
@@ -126,9 +176,16 @@
       }
     });
 
-    // 信息弹窗交互
+    // 空格键控制音频
+    const audio = document.getElementById('audio');
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') audio.paused ? audio.play() : audio.pause();
+    });
+
+    // 信息图标交互
     document.getElementById('info-btn').addEventListener('click', () => {
       document.getElementById('info-modal').style.display = 'block';
+      document.getElementById('info-btn').style.animation = 'none';
     });
   </script>
 </body>
