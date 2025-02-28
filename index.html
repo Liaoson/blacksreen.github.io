@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Black Screen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 全屏黑色背景 */
+    body { 
+      margin: 0; 
+      background: black; 
+      height: 100vh; 
+      cursor: none; 
+    }
+    /* 隐藏滚动条 */
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <!-- 音频播放器（隐藏） -->
+  <audio id="audio" src="noise.mp3" loop></audio>
+
+  <script>
+    // 快捷键功能（直接复制）
+    document.addEventListener('keydown', (e) => {
+      const audio = document.getElementById('audio');
+      // 空格键：播放/暂停白噪音
+      if (e.code === 'Space') {
+        audio.paused ? audio.play() : audio.pause();
+      }
+      // ESC键：关闭页面（需先确认）
+      if (e.code === 'Escape') {
+        if (confirm("确定要离开吗？")) window.close();
+      }
+    });
+    // 点击屏幕任意处退出全屏（手机端友好）
+    document.body.addEventListener('click', () => {
+      document.exitFullscreen();
+    });
+  </script>
+</body>
+</html>
