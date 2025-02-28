@@ -13,28 +13,74 @@
     }
     /* 隐藏滚动条 */
     ::-webkit-scrollbar { display: none; }
+
+    /* 提示框样式（居中显示） */
+    #tip {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-family: Arial;
+      z-index: 9999;
+      opacity: 0;
+      animation: fade 2s ease-in-out;
+    }
+
+    /* 提示框渐隐动画 */
+    @keyframes fade {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
-  <!-- 音频播放器（隐藏） -->
+  <!-- 提示文字 -->
+  <div id="tip">若要退出全屏模式，请按下 Esc 键</div>
+
+  <!-- 音频播放器 -->
   <audio id="audio" src="noise.mp3" loop></audio>
 
   <script>
-    // 快捷键功能（直接复制）
+    // 页面加载后显示提示
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('tip').style.display = 'block';
+    });
+
+    // 双击进入全屏
+    document.body.addEventListener('dblclick', () => {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { // IE11
+        document.documentElement.msRequestFullscreen();
+      }
+    });
+
+    // 按 ESC 退出全屏
     document.addEventListener('keydown', (e) => {
-      const audio = document.getElementById('audio');
-      // 空格键：播放/暂停白噪音
+      if (e.code === 'Escape') {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { // Safari
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE11
+          document.msExitFullscreen();
+        }
+      }
+    });
+
+    // 原有空格键播放功能（保留）
+    const audio = document.getElementById('audio');
+    document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         audio.paused ? audio.play() : audio.pause();
       }
-      // ESC键：关闭页面（需先确认）
-      if (e.code === 'Escape') {
-        if (confirm("确定要离开吗？")) window.close();
-      }
-    });
-    // 点击屏幕任意处退出全屏（手机端友好）
-    document.body.addEventListener('click', () => {
-      document.exitFullscreen();
     });
   </script>
 </body>
